@@ -1,0 +1,645 @@
+; to compile this code, --> make sure that the nasm is 32 bit elf generator
+; # nasm -f elf -o start.o k386.asm
+; to make sure that the generated elf is 32 bit
+; on linux, issue the command :
+; # file start.o
+; to see the type of the file.
+
+[BITS 32] 		;Set code generation to 32 bit mode
+
+
+global start, _start
+global gdt_flush, _gdt_flush
+global idt_load, _idt_load
+global kernal_top_stack, _kernal_top_stack
+global kernal_stack, _kernal_stack
+
+
+extern kernal_start	; starting point of the c kernal
+extern gdtp		; pointer to GDT ( size, offset )
+extern idtp		; pointer to IDT ( size, offset )
+extern fault_handler	; c function to handle exceptions
+extern irq_handler	; c funcation to handle IRQ
+
+;--------------------------------------------------------------------------
+; for test perpuse
+extern test_gdtp
+;global test_fill_gdtp
+
+extern test_idtp
+;global test_fill_idtp
+;--------------------------------------------------------------------------
+
+; ISRs of exception handling
+global isr0, _isr0
+global isr1, _isr1
+global isr2, _isr2
+global isr3, _isr3
+global isr4, _isr4
+global isr5, _isr5
+global isr6, _isr6
+global isr7, _isr7
+global isr8, _isr8
+global isr9, _isr9
+global isr10, _isr10
+global isr11, _isr11
+global isr12, _isr12
+global isr13, _isr13
+global isr14, _isr14
+global isr15, _isr15
+global isr16, _isr16
+global isr17, _isr17
+global isr18, _isr18
+global isr19, _isr19
+global isr20, _isr20
+global isr21, _isr21
+global isr22, _isr22
+global isr23, _isr23
+global isr24, _isr24
+global isr25, _isr25
+global isr26, _isr26
+global isr27, _isr27
+global isr28, _isr28
+global isr29, _isr29
+global isr30, _isr30
+global isr31, _isr31
+
+; IRQ Interrupt Request handling
+global irq0, _irq0
+global irq1, _irq1
+global irq2, _irq2
+global irq3, _irq3
+global irq4, _irq4
+global irq5, _irq5
+global irq6, _irq6
+global irq7, _irq7
+global irq8, _irq8
+global irq9, _irq9
+global irq10, _irq10
+global irq11, _irq11
+global irq12, _irq12
+global irq13, _irq13
+global irq14, _irq14
+global irq15, _irq15
+	;----------------------------------------------------------------------------------------
+; setting up the Multiboot header - see GRUB docs for details
+;----------------------------------------------------------------------------------------
+MODULEALIGN equ  1<<0                   ; align loaded modules on page boundaries
+MEMINFO     equ  1<<1                   ; provide memory map
+FLAGS       equ  MODULEALIGN | MEMINFO  ; this is the Multiboot 'flag' field
+MAGIC       equ    0x1BADB002           ; 'magic number' lets bootloader find the header
+CHECKSUM    equ -(MAGIC + FLAGS)        ; checksum required
+;----------------------------------------------------------------------------------------
+
+section .text
+
+;----------------------------------------------------------------------------------------
+; setting up the Multiboot header - see GRUB docs for details
+;----------------------------------------------------------------------------------------
+; This part MUST be 4byte aligned, so we solve that issue using 'ALIGN 4'
+ALIGN 4
+
+dd MAGIC
+dd FLAGS
+dd CHECKSUM
+ 
+; AOUT kludge - must be physical addresses. Make a note of these:
+; The linker script fills in the data for these ones!
+;    dd mboot
+;    dd code
+;    dd bss
+;    dd end
+;    dd start
+;----------------------------------------------------------------------------------------
+
+
+
+; reserve initial kernel stack space
+STACKSIZE equ 	0x4000           ; that's 16k.
+
+
+start  :
+_start :		
+		mov esp, kernal_top_stack	; setup kernal stack
+		jmp main_kernal	
+
+
+main_kernal: 
+        	push eax                 ; Push the multiboot magic number
+        	push ebx                 ; Push the multiboot info stack
+		call kernal_start
+
+		jmp $		; infinite loop
+
+
+
+gdt_flush  :
+_gdt_flush :
+		lgdt [gdtp]
+    		mov ax, 0x10      ; 0x10 is the offset in the GDT to our data segment
+    		mov ds, ax
+    		mov es, ax
+    		mov fs, ax
+    		mov gs, ax
+    		mov ss, ax
+    		jmp 0x08:flush2   ; 0x08 is the offset to our code segment: Far jump!
+flush2:
+    		ret               ; Returns back to the C code!
+
+
+
+
+idt_load  :	
+_idt_load :
+		lidt [idtp]
+    		ret		  ; Returns back to the C code!
+	
+
+;  0: Divide By Zero Exception
+isr0 	:
+_isr0	:
+    		cli		; disable interrupt
+    		push byte 0     ; A normal ISR stub that pops a dummy error code to keep a uniform stack frame
+    		push byte 0	; exception number 0
+    		jmp isr_common_stub	; to save processor state on the stack
+
+;  1: Debug Exception
+isr1 	:
+_isr1	:
+    		cli
+    		push byte 0
+    		push byte 1	; exception number 1
+    		jmp isr_common_stub
+
+;  2: Non Maskable Interrupt Exception
+isr2 	:
+_isr2 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 2	; exception number 2
+    		jmp isr_common_stub
+
+;  3: Int 3 Exception ( Breakpoint )
+isr3 	:
+_isr3	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 3	; exception number 3
+    		jmp isr_common_stub
+
+;  4: INTO Exception ( Overflow )
+isr4 	:
+_isr4	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 4	; exception number 4
+    		jmp isr_common_stub
+
+;  5: Out of Bounds Exception
+isr5 	:
+_isr5 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 5	; exception number 5
+    		jmp isr_common_stub
+
+;  6: Invalid Opcode Exception
+isr6 	:
+_isr6 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 6	; exception number 6
+    		jmp isr_common_stub
+
+;  7: Coprocessor Not Available Exception
+isr7 	:
+_isr7 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 7	; exception number 7
+    		jmp isr_common_stub
+
+;  8: Double Fault Exception (With Error Code!)
+isr8 	:
+_isr8	:
+    		cli
+    				; Note that we DON'T push a value on the stack in this one!
+                		; It pushes one already! Use this type of stub for exceptions that pop error codes!
+    		push byte 8	; exception number 8    		
+		jmp isr_common_stub
+
+;  9: Coprocessor Segment Overrun Exception
+isr9 	:
+_isr9 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 9	; exception number 9
+    		jmp isr_common_stub
+
+; 10: Bad TSS Exception (With Error Code!)
+isr10 	:
+_isr10 	:
+    		cli
+    				; Note that we DON'T push a value on the stack in this one!
+                		; It pushes one already! Use this type of stub for exceptions that pop error codes!
+    		push byte 10	; exception number 10
+    		jmp isr_common_stub
+
+; 11: Segment Not Present Exception (With Error Code!)
+isr11 	:
+_isr11 	:
+    		cli
+    				; Note that we DON'T push a value on the stack in this one!
+                		; It pushes one already! Use this type of stub for exceptions that pop error codes!
+    		push byte 11	; exception number 11
+    		jmp isr_common_stub
+
+; 12: Stack Fault Exception (With Error Code!)
+isr12 	:
+_isr12 	:
+    		cli
+    				; Note that we DON'T push a value on the stack in this one!
+                		; It pushes one already! Use this type of stub for exceptions that pop error codes!
+    		push byte 12	; exception number 12
+    		jmp isr_common_stub
+
+; 13: General Protection Fault Exception (With Error Code!)
+isr13 	:
+_isr13 	:
+    		cli
+    				; Note that we DON'T push a value on the stack in this one!
+                		; It pushes one already! Use this type of stub for exceptions that pop error codes!
+    		push byte 13	; exception number 13
+    		jmp isr_common_stub
+
+; 14: Page Fault Exception (With Error Code!)
+isr14 	:
+_isr14 	:
+    		cli
+    				; Note that we DON'T push a value on the stack in this one!
+                		; It pushes one already! Use this type of stub for exceptions that pop error codes!
+    		push byte 14	; exception number 14
+    		jmp isr_common_stub
+
+; 15: Reserved Exception
+isr15 	:
+_isr15 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 15	; exception number 15
+    		jmp isr_common_stub
+
+; 16: Floating Point Exception
+isr16 	:
+_isr16 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 16	; exception number 16
+    		jmp isr_common_stub
+
+; 17: Alignment Check Exception
+isr17 	:
+_isr17 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 17	; exception number 17
+    		jmp isr_common_stub
+
+; 18: Machine Check Exception
+isr18 	:
+_isr18 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 18	; exception number 18
+    		jmp isr_common_stub
+
+; 19: Reserved
+isr19 	:
+_isr19 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 19	; exception number 19
+    		jmp isr_common_stub
+
+; 20: Reserved
+isr20 	:
+_isr20 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 20	; exception number 20
+    		jmp isr_common_stub
+
+; 21: Reserved
+isr21 	:
+_isr21 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 21	; exception number 21
+    		jmp isr_common_stub
+
+; 22: Reserved
+isr22 	:
+_isr22 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 22	; exception number 22
+    		jmp isr_common_stub
+
+; 23: Reserved
+isr23 	:
+_isr23 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 23	; exception number 23
+    		jmp isr_common_stub
+
+; 24: Reserved
+isr24 	:
+_isr24 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 24	; exception number 24
+    		jmp isr_common_stub
+
+; 25: Reserved
+isr25 	:
+_isr25 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 25	; exception number 25
+    		jmp isr_common_stub
+
+; 26: Reserved
+isr26 	:
+_isr26 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 26	; exception number 26
+    		jmp isr_common_stub
+
+; 27: Reserved
+isr27 	:
+_isr27 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 27	; exception number 27
+    		jmp isr_common_stub
+
+; 28: Reserved
+isr28 	:
+_isr28 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 28	; exception number 28
+    		jmp isr_common_stub
+
+; 29: Reserved
+isr29 	:
+_isr29 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 29	; exception number 29
+    		jmp isr_common_stub
+
+; 30: Reserved
+isr30 	:
+_isr30 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 30	; exception number 30
+    		jmp isr_common_stub
+
+; 31: Reserved
+isr31 	:
+_isr31 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 31	; exception number 31
+    		jmp isr_common_stub
+
+
+; 32: IRQ0	system timer (cannot be changed)
+irq0 	:
+_irq0 	:
+    		cli
+    		push byte 0    	; dummy error code to keep a uniform stack frame
+    		push byte 32	; interrupt number 32
+    		jmp irq_common_stub
+
+
+; 33: IRQ1	keyboard controller (cannot be changed)
+irq1 	:
+_irq1 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 33	; interrupt number 33
+    		jmp irq_common_stub
+
+; 34: IRQ2	cascaded signals from IRQs 8–15
+irq2 	:
+_irq2 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 34	; interrupt number 34
+    		jmp irq_common_stub
+
+; 35: IRQ3	serial port controller for COM2 (shared with COM4, if present)
+irq3 	:
+_irq3 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 35	; interrupt number 35
+    		jmp irq_common_stub
+
+; 36: IRQ4	serial port controller for COM1 (shared with COM3, if present)
+irq4 	:
+_irq4 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 36	; interrupt number 36
+    		jmp irq_common_stub
+
+; 37: IRQ5	LPT port 2  or  sound card
+irq5 	:
+_irq5 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 37	; interrupt number 37
+    		jmp irq_common_stub
+
+; 38: IRQ6	floppy disk controller
+irq6 	:
+_irq6 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 38	; interrupt number 38
+    		jmp irq_common_stub
+
+; 39: IRQ7	LPT port 1  or  It is used for printers or for any parallel port if a printer is not present
+irq7 	:
+_irq7 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 39	; interrupt number 39
+    		jmp irq_common_stub
+
+; 40: IRQ8	RTC Timer
+irq8 	:
+_irq8 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 40	; interrupt number 40
+    		jmp irq_common_stub
+
+; 41: IRQ9	The Interrupt is left open for the use of peripherals. open interrupt / available  or  SCSI host adapter
+irq9 	:
+_irq9 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 41	; interrupt number 41
+    		jmp irq_common_stub
+
+; 42: IRQ10	The Interrupt is left open for the use of peripherals. open interrupt / available  or  SCSI  or  NIC
+irq10 	:
+_irq10 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 42	; interrupt number 42
+    		jmp irq_common_stub
+
+; 43: IRQ11	The Interrupt is left open for the use of peripherals. open interrupt / available  or  SCSI  or  NIC
+irq11 	:
+_irq11 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 43	; interrupt number 43
+    		jmp irq_common_stub
+
+; 44: IRQ12	mouse on PS/2 connector
+irq12 	:
+_irq12 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 44	; interrupt number 44
+    		jmp irq_common_stub
+
+; 45: IRQ13	math co-processor  or  integrated floating point unit  or  inter-processor interrupt (use depends on OS)
+irq13 	:
+_irq13 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 45	; interrupt number 45
+    		jmp irq_common_stub
+
+; 46: IRQ14	primary ATA channel, ATA interface usually serves hard disks and CD drives
+irq14 	:
+_irq14 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 46	; interrupt number 46
+    		jmp irq_common_stub
+
+; 47: IRQ15	secondary ATA channel, ATA interface usually serves hard disks and CD drives
+irq15 	:
+_irq15 	:
+    		cli
+    		push byte 0	; dummy error code to keep a uniform stack frame
+    		push byte 47	; interrupt number 47
+    		jmp irq_common_stub
+
+
+
+
+; This is our common ISR stub. It saves the processor state, sets
+; up for kernel mode segments, calls the C-level fault handler,
+; and finally restores the stack frame.
+isr_common_stub:
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp   ; Push us the stack
+    push eax
+    mov eax, fault_handler
+    call eax       ; A special call, preserves the 'eip' register
+    pop eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popa
+    add esp, 8     ; Cleans up the pushed error code and pushed ISR number
+    iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
+
+
+; This is a stub that we have created for IRQ based ISRs. This calls
+; '_irq_handler' in our C code. We need to create this in an 'irq.c'
+irq_common_stub:
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    mov eax, esp
+    push eax			; pointer of regs structure
+    mov eax, irq_handler
+    call eax
+
+
+;	test context
+	
+	mov esp, eax
+
+
+;	end test
+
+    pop eax			; free the pointer by pop the pointer of regs structure
+
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popa	
+    add esp, 8
+    iret
+
+
+
+idle_task :
+		sti
+		hlt
+		cli
+		ret
+
+
+;---------------------------------------------------------------------------------------
+;test_fill_gdtp :
+;		sgdt [test_gdtp]
+;		ret
+	
+
+;test_fill_idtp :
+;		sidt [test_idtp]
+;		ret	
+;---------------------------------------------------------------------------------------
+
+
+
+
+align 4
+section .bss
+kernal_stack:
+resb	STACKSIZE
+kernal_top_stack:

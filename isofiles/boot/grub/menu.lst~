@@ -1,0 +1,8 @@
+default 0
+timeout 20
+ 
+#title Boot from hard disk
+#chainloader (hd0)+1
+ 
+title MinaOS v1.0.0
+kernel /boot/kernal.bin

@@ -1,0 +1,158 @@
+MySQL Servers Info:
+==================
+
+server IP		port		user-name		password				
+===========          ==========      ===============         	======================
+67.225.196.114		5514		obbmsquser		bdtuknrtVBEYRJNReb%?Fd:vk
+67.225.196.199		5599		obdbsquser		DFVEWRCV$^BJ465vcw4r%w46b
+67.225.196.246		5546		obmdsquser		gr$2VGrdtt34s:ff!!LxeasmR
+
+88.208.211.47		5466		pcmssquser		chg32F6y%f$wwl97d2ev4.dem 
+
+77.68.43.8		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRtb													
+77.68.43.12		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRtb				
+77.68.43.28		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRtb										
+77.68.46.228		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRtb
+77.68.46.236		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRtb
+77.68.46.230		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRtb
+77.68.47.6		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRt
+
+217.174.241.238		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRtb
+88.208.244.167		3306		root			1q2w3e4rAZS
+77.68.39.93		3448		pcdbsquser		HfAj%ydd208jTgW3:ojhqwRtb
+77.68.57.160		15160		rjvt160			1q2w3e4rAZS
+
+41.196.103.133 	new backup server		javateam		 java$5Team
+
+88.208.204.190		4224		rjvt190			1q2w3e4rAZS			-- test
+			4225
+88.208.201.221		4316		rjvt221			1q2w3e4rAZS
+
+217.174.253.113		44113		rjvt113			F!g8|d1E_113
+
+67.225.196.246		44246		rjvt246			F!g8|d1E_246
+                    ==============================================
+
+VNC Connections
+===============
+vncviewer -shared 88.208.204.190:3&		--> 31nT__$|$190
+vncviewer -shared 67.225.196.199:3&		--> 31nT__$|$199
+vncviewer -shared 88.208.244.167:2&		--> 21nT__$|$
+vncviewer -shared 88.208.201.221:1&		--> 11nT__$|$
+vncviewer -shared 77.68.57.160:1&		->  11nT__$|$
+vncviewer -shared 217.174.253.113:1&		->  11nT__$|$113
+vncviewer -shared 67.225.196.246:1&		->  11nT__$|$246
+
+
+mysql -h 88.208.204.190 --port=4224 -u rjvt190 -p1q2w3e4rAZS
+
+mysql -u root -pRootAdmin
+
+
+Server IP		Port		UserName		Password
+=========		====		========		========
+88.208.244.167		2		isuser2			isuser2
+88.208.244.167		3		isuser3			isuser3
+
+67.225.196.114		1		isteam1			11nT__$|$114
+67.225.196.114		3		isteam2			21nT__$|$114
+67.225.196.114		4		isteam3			31nT__$|$114
+
+67.225.196.199		2		isteam1			11nT__$|$199
+67.225.196.199		3		isteam2			21nT__$|$199
+67.225.196.199		4		isteam3			31nT__$|$199
+
+67.225.196.152		2		isteam2			11nT__$|$152
+67.225.196.152		3		isteam3			21nT__$|$152
+67.225.196.152		4		isteam4			31nT__$|$152
+
+88.208.204.190		3		------------			31nT__$|$190
+77.68.57.160		1		isteam1			11nT__$|$160
+		===================================================
+FTP Connections Info
+====================
+
+Server IP		UserName		Password
+=========		========		========
+88.208.244.167		cojava			coJAVA
+67.225.196.114		isteam1			11nT__$|$114
+67.225.196.199		isteam1			11nT__$|$199
+77.68.46.228		cojava			diU*ve85y+
+88.208.201.221		cojava			coJAVA
+77.68.57.160		cojava			coJAVA
+88.208.204.190		cojava			
+217.174.253.113		cojava			INT%1ASD20113	
+
+67.225.196.246		cojava  			INT%1ASD20246 
+
+sudo /sbin/service mysql restart
+sudo /etc/init.d/mysql restart
+
+khaled account:
+===============
+user=kh_is2 pass=K&h_!S2
+
+
+
+mail
+--------
+http://mail.bookdepository.co.uk
+user name  = mina.attya
+passwd = User2010
+
+user name = internalsystem
+passwd = 1nT__$|$
+
+local server ( backup server )
+user name = javateam
+password = javateam
+
+
+
+
+
+
+
+=====
+[11:59:10 AM] Moll: truncate commondb.amazon_list_ca
+go
+truncate commondb.amazon_list_de
+go
+truncate commondb.amazon_list_fr
+go
+truncate commondb.amazon_list_uk
+go
+truncate commondb.amazon_list_us
+go
+truncate commondb.amazon_price_checker_ca
+go
+truncate commondb.amazon_price_checker_de
+go
+truncate commondb.amazon_price_checker_fr
+go
+truncate commondb.amazon_price_checker_uk
+go
+truncate commondb.amazon_price_checker_us
+go
+truncate commondb.market_list_ca
+go
+truncate commondb.market_list_de
+go
+truncate commondb.market_list_fr
+go
+truncate commondb.market_list_uk
+go
+truncate commondb.market_list_us
+go
+truncate commondb.isbn_stock
+
+
+http://isreportingtool.bookdepo.co.uk/ReportingTool/alibris/pricing_result.php
+http://isreportingtool.bookdepo.co.uk/WebTool/amazontest/amazon.php
+User: admin7
+pass: Mat773Vdr
+
+
+
+/usr/local/apache-tomcat-7.0.19/bin/shutdown.sh
+/usr/local/apache-tomcat-7.0.19/bin/startup.sh
